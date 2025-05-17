@@ -2,16 +2,14 @@ import os
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-# Main menu
-# Final updated main menu (reversed columns, updated buttons)
+# ✅ Main menu (right-to-left)
 MAIN_MENU = [
     ["❓ سوالات پرتکرار", "📝 چک‌لیست مهاجرت"],
-    ["📞 گروه‌های بیشتر", "💼 خدمات مهاجرتی"],
+    ["🔗 گروه‌های بیشتر", "💼 خدمات مهاجرتی"],
     ["📬 تماس با ما"]
 ]
 
-
-# Checklist submenu
+# ✅ Checklist submenu
 CHECKLIST_MENU = [
     ["کسب اطلاعات کلی", "مدارک مورد نیاز پذیرش"],
     ["مراحل اخذ پذیرش", "آمادگی برای سفارت"],
@@ -19,13 +17,13 @@ CHECKLIST_MENU = [
     ["🔙 بازگشت به منوی اصلی"]
 ]
 
-# /start command
+# ✅ /start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_name = update.effective_user.full_name
 
     # Log user info
-    with open("users_log.txt", "a") as f:
+    with open("users_log.txt", "a", encoding="utf-8") as f:
         f.write(f"{user_id} - {user_name}\n")
 
     await update.message.reply_text(
@@ -33,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup(MAIN_MENU, resize_keyboard=True)
     )
 
-# Menu logic
+# ✅ Main menu logic
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     choice = update.message.text
 
@@ -53,7 +51,7 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Checklist submenu answers
+    # Checklist submenu content
     checklist_responses = {
         "کسب اطلاعات کلی": "در این بخش اطلاعات کلی درباره مهاجرت به آلمان را می‌خوانید...",
         "مدارک مورد نیاز پذیرش": "لیست مدارک مورد نیاز برای اخذ پذیرش دانشگاهی...",
@@ -67,21 +65,20 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(checklist_responses[choice])
         return
 
-    # Main menu responses
-main_responses = {
-    "❓ سوالات پرتکرار": "پرسش‌های رایج دانشجویان ایرانی...",
-    "🔗 گروه‌های بیشتر": "لینک گروه‌های مفید: ...",
-    "💼 خدمات مهاجرتی": "خدمات ما شامل اپلای، ویزا، ترجمه و ...",
-    "📬 تماس با ما": "@your_support"
-}
-
+    # Main menu content
+    main_responses = {
+        "❓ سوالات پرتکرار": "پرسش‌های رایج دانشجویان ایرانی...",
+        "🔗 گروه‌های بیشتر": "لینک گروه‌های مفید: ...",
+        "💼 خدمات مهاجرتی": "خدمات ما شامل اپلای، ویزا، ترجمه و ...",
+        "📬 تماس با ما": "@behnamrmz"
+    }
 
     if choice in main_responses:
         await update.message.reply_text(main_responses[choice])
     else:
         await update.message.reply_text("لطفاً از گزینه‌های منو استفاده کنید.")
 
-# Main app
+# ✅ App setup
 if __name__ == '__main__':
     app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
     app.add_handler(CommandHandler("start", start))
