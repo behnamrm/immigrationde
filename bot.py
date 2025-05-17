@@ -1,13 +1,21 @@
 import os
 from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-# Menu options
+# Main menu
 MAIN_MENU = [
     ["📝 چک‌لیست مهاجرت", "❓ سوالات پرتکرار"],
     ["🔗 گروه‌های بیشتر", "📞 درخواست تماس"],
     ["💼 خدمات مهاجرتی", "🌐 وب‌سایت ما"],
     ["📬 تماس با ما"]
+]
+
+# Checklist submenu
+CHECKLIST_MENU = [
+    ["کسب اطلاعات کلی", "مدارک مورد نیاز پذیرش"],
+    ["مراحل اخذ پذیرش", "آمادگی برای سفارت"],
+    ["ورود به آلمان", "مشاهده همه دسته ها"],
+    ["🔙 بازگشت به منوی اصلی"]
 ]
 
 # /start command
@@ -20,15 +28,46 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f.write(f"{user_id} - {user_name}\n")
 
     await update.message.reply_text(
-        "سلام 👋\\nبه ربات مهاجرت به آلمان خوش آمدید!",
+        "سلام 👋\nبه ربات مهاجرت به آلمان خوش آمدید!",
         reply_markup=ReplyKeyboardMarkup(MAIN_MENU, resize_keyboard=True)
     )
 
-# Fallback handler
+# Menu logic
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     choice = update.message.text
-    responses = {
-        "📝 چک‌لیست مهاجرت": "در اینجا چک‌لیست کامل مهاجرت به آلمان را می‌بینید...",
+
+    # Show checklist submenu
+    if choice == "📝 چک‌لیست مهاجرت":
+        await update.message.reply_text(
+            "لطفا دسته بندی مورد نظر را انتخاب کنید:",
+            reply_markup=ReplyKeyboardMarkup(CHECKLIST_MENU, resize_keyboard=True)
+        )
+        return
+
+    # Return to main menu
+    if choice == "🔙 بازگشت به منوی اصلی":
+        await update.message.reply_text(
+            "بازگشت به منو",
+            reply_markup=ReplyKeyboardMarkup(MAIN_MENU, resize_keyboard=True)
+        )
+        return
+
+    # Checklist submenu answers
+    checklist_responses = {
+        "کسب اطلاعات کلی": "در این بخش اطلاعات کلی درباره مهاجرت به آلمان را می‌خوانید...",
+        "مدارک مورد نیاز پذیرش": "لیست مدارک مورد نیاز برای اخذ پذیرش دانشگاهی...",
+        "مراحل اخذ پذیرش": "گام‌های لازم برای گرفتن پذیرش را اینجا ببینید...",
+        "آمادگی برای سفارت": "چطور برای وقت سفارت و مصاحبه آماده شوید...",
+        "ورود به آلمان": "راهنمایی‌های اولیه برای زندگی در آلمان پس از ورود...",
+        "مشاهده همه دسته ها": "همه مراحل مهاجرت: از تحقیق تا ورود به آلمان..."
+    }
+
+    if choice in checklist_responses:
+        await update.message.reply_text(checklist_responses[choice])
+        return
+
+    # Main menu responses
+    main_responses = {
         "❓ سوالات پرتکرار": "پرسش‌های رایج دانشجویان ایرانی...",
         "🔗 گروه‌های بیشتر": "لینک گروه‌های مفید: ...",
         "📞 درخواست تماس": "لطفاً شماره‌ خود را ارسال کنید. تیم ما با شما تماس می‌گیرد.",
@@ -37,15 +76,14 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📬 تماس با ما": "@your_support"
     }
 
-    await update.message.reply_text(responses.get(choice, "لطفاً از گزینه‌های منو استفاده کنید."))
+    if choice in main_responses:
+        await update.message.reply_text(main_responses[choice])
+    else:
+        await update.message.reply_text("لطفاً از گزینه‌های منو استفاده کنید.")
 
-# Main function
+# Main app
 if __name__ == '__main__':
-    from telegram.ext import MessageHandler, filters
-
     app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_menu))
-
     app.run_polling()
