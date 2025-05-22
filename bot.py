@@ -79,11 +79,25 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if choice == "🔙 بازگشت به چک‌لیست":
+        await update.message.reply_text(
+            "بازگشت به چک‌لیست مهاجرت:",
+            reply_markup=ReplyKeyboardMarkup(CHECKLIST_MENU, resize_keyboard=True)
+        )
+        return
+
     # Show subitems if applicable
     if choice in CHECKLIST_SUBITEMS:
-        subitems_text = "\n".join(f"• {item}" for item in CHECKLIST_SUBITEMS[choice])
-        await update.message.reply_text(f"زیرمجموعه‌های {choice}:\n\n{subitems_text}")
+        sub_items = CHECKLIST_SUBITEMS[choice]
+        sub_menu = [[item] for item in sub_items] + [["🔙 بازگشت به چک‌لیست"]]
+        await update.message.reply_text(
+            f"لطفا یکی از زیرمجموعه‌های «{choice}» را انتخاب کنید:",
+            reply_markup=ReplyKeyboardMarkup(sub_menu, resize_keyboard=True)
+        )
         return
+
+    # Sub-item example response (optional customization)
+    await update.message.reply_text(f"شما گزینه «{choice}» را انتخاب کردید. اطلاعات این بخش در حال آماده‌سازی است.")
 
     # Main menu responses
     main_responses = {
