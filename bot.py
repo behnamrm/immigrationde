@@ -61,6 +61,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup(MAIN_MENU, resize_keyboard=True)
     )
 
+# ✅ Split list into rows of n
+def split_into_rows(items, row_size=2):
+    return [items[i:i+row_size] for i in range(0, len(items), row_size)]
+
 # ✅ Menu handler
 async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     choice = update.message.text
@@ -86,20 +90,17 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Show subitems if applicable
     if choice in CHECKLIST_SUBITEMS:
         sub_items = CHECKLIST_SUBITEMS[choice]
-        sub_menu = [[item] for item in sub_items] + [["🔙 بازگشت به چک‌لیست"]]
+        sub_menu = split_into_rows(sub_items, 2) + [["🔙 بازگشت به چک‌لیست"]]
         await update.message.reply_text(
             f"لطفا یکی از زیرمجموعه‌های «{choice}» را انتخاب کنید:",
             reply_markup=ReplyKeyboardMarkup(sub_menu, resize_keyboard=True)
         )
         return
 
-    # Sub-item example response (optional customization)
     await update.message.reply_text(f"شما گزینه «{choice}» را انتخاب کردید. اطلاعات این بخش در حال آماده‌سازی است.")
 
-    # Main menu responses
     main_responses = {
         "❓ سوالات پرتکرار": "پرسش‌های رایج دانشجویان ایرانی...",
         "🔗 گروه‌های پرسش و پاسخ": "لینک گروه‌های مفید برای پرسش و پاسخ: ...",
