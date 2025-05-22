@@ -48,6 +48,14 @@ CHECKLIST_SUBITEMS = {
     ]
 }
 
+# ✅ توضیحات هر زیرموضوع چک‌لیست
+CHECKLIST_CONTENTS = {
+    "🇩🇪 چرا کشور آلمان؟": "آلمان یکی از مقصدهای محبوب برای تحصیل به دلایل کیفیت بالا، شهریه کم یا رایگان، و فرصت‌های کاری پس از فارغ‌التحصیلی است.",
+    "🎓 انواع مقاطع تحصیلی در آلمان": "در آلمان می‌توان در مقاطع کارشناسی، کارشناسی ارشد و دکترا تحصیل کرد.",
+    "🗣️ تحصیل به آلمانی یا انگلیسی؟": "بسته به رشته و دانشگاه، برنامه‌های تحصیلی هم به زبان آلمانی و هم انگلیسی ارائه می‌شوند."
+    # 🔁 می‌توانید ادامه دهید برای دیگر موارد
+}
+
 # ✅ /start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -79,7 +87,16 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     if choice in main_responses:
-        await update.message.reply_text(main_responses[choice])
+        if choice == "📋 مشاهده همه مراحل":
+            all_subitems = sum(CHECKLIST_SUBITEMS.values(), [])
+            all_rows = split_into_rows(all_subitems, 3)
+            all_rows.append(["🔙 بازگشت به چک‌لیست"])
+            await update.message.reply_text(
+                "تمام مراحل را انتخاب کنید:",
+                reply_markup=ReplyKeyboardMarkup(all_rows, resize_keyboard=True)
+            )
+        else:
+            await update.message.reply_text(main_responses[choice])
         return
 
     if choice == "📝 چک‌لیست مهاجرت":
@@ -110,6 +127,10 @@ async def handle_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"لطفا یکی از زیرمجموعه‌های «{choice}» را انتخاب کنید:",
             reply_markup=ReplyKeyboardMarkup(sub_menu, resize_keyboard=True)
         )
+        return
+
+    if choice in CHECKLIST_CONTENTS:
+        await update.message.reply_text(CHECKLIST_CONTENTS[choice])
         return
 
     await update.message.reply_text("لطفاً از گزینه‌های منو استفاده کنید.")
